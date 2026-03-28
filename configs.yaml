@@ -1,0 +1,85 @@
+# Example configuration for:
+#   python3 src/Apps/run_datamc.py --yaml configs.yaml
+#
+# This app:
+# - loads the data ROOT TTree
+# - adds the sWeight TTree as a FRIEND (entry-by-entry aligned)
+# - exports a small Parquet cache (variables + __sweight)
+# - exports an MC Parquet cache (variables + __mc_weight)
+# - makes one data-vs-mc plot per variable + a pull histogram panel
+
+# Data ROOT file.
+# You can optionally specify the tree name inline as: "/path/file.root:TreeName"
+# (If you use the inline form, do NOT also set `data_tree`.)
+data: "/pathto/data_sw.root:DecayTree"
+
+# ROOT file containing the sWeights TTree (must have same number of entries as `data`).
+# You can optionally specify the tree name inline as: "/path/file.root:TreeName"
+# (If you use the inline form, do NOT also set `sweight_tree`.)
+data_sweight: "/pathto/data_sw_weights.root:sweightTree"
+
+# Branch name inside the sWeight tree to use as weight for data
+sweight_var: "signal_sweight"
+
+# Label string used in the legend for the data sample:
+# legend label becomes: "data sweighted {label_data}"
+label_data: "block8"
+
+# MC input specification.
+# Supported forms:
+# - Single ROOT file path:
+#     mc: "/path/to/mc.root"
+# - Glob:
+#     mc: "/path/to/mc/*.root"
+# - Keyword:
+#     mc: "sim10d"
+#   (keyword searches for '*.root' files containing the keyword in the same directory as `data`)
+# - List of any of the above:
+#     mc:
+#       - "/path/to/mcA.root"
+#       - "/path/to/mcB.root"
+mc: "keyword"
+
+# Legend label becomes: "mc {mc_label}"
+mc_label: "sim10d"
+
+# MC per-entry weight branch (optional). If omitted, MC weight defaults to 1.0.
+mc_weight: "wPID"
+
+# Title shown at the top of each plot
+tagplot: "data vs mc"
+
+# Optional output directory (default: plots/)
+# outdir: "plots"
+
+# Optional tree names:
+# - If omitted, the app picks the first TTree it finds in each ROOT file.
+# data_tree: "DecayTree"
+# sweight_tree: "DecayTree"
+# mc_tree: "DecayTree"
+
+# Output formats (default: ["png"])
+# formats: ["png", "pdf"]
+
+# Variables to plot.
+# For each variable key (e.g. B_PT), the app reads that branch/column from both data and MC.
+variables:
+  B_PT:
+    xlabel: "$p_{T}$ (B)"
+    bins: 50
+    # xrange can be either:
+    # - a list: [min, max]
+    # - or a string: "min, max"
+    xrange: [0, 20000]
+
+  # Another example variable
+  B_ETA:
+    xlabel: "$\\eta$ (B)"
+    bins: 40
+    xrange: [1.5, 6.0]
+
+  # Another example variable
+  B_IPCHI2_OWNPV:
+    xlabel: "IP $\\chi^{2}$ (B)"
+    bins: 50
+    xrange: [0, 50]
