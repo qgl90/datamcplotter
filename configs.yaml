@@ -1,5 +1,5 @@
 # Example configuration for:
-#   python3 src/Apps/run_datamc.py --yaml configs.yaml
+#   python3 src/Apps/runners/run_datamc.py --yaml configs.yaml
 #
 # This app:
 # - loads the data ROOT TTree
@@ -83,3 +83,23 @@ variables:
     xlabel: "IP $\\chi^{2}$ (B)"
     bins: 50
     xrange: [0, 50]
+
+# Optional 2D plots (each entry produces a 3-panel figure: Data, MC, Pull).
+# Keys are output plot names (saved as `outdir/<name>.<format>`).
+#
+# Minimal compromise:
+# - specify x/y branch names (xvar/yvar)
+# - specify labels, binning, and ranges
+# - optional zscale ("linear" or "log") for the Data/MC color scale
+#
+# variables_2d:
+#   B_PT_vs_B_ETA:
+#     xvar: "B_PT"
+#     yvar: "B_ETA"
+#     xlabel: "$p_{T}$ (B)"
+#     ylabel: "$\\eta$ (B)"
+#     xbins: 50
+#     ybins: 40
+#     xrange: [0, 20000]
+#     yrange: [1.5, 6.0]
+#     zscale: "log"

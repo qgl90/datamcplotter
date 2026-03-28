@@ -8,7 +8,7 @@ import sys
 import pandas as pd
 
 # Allow running without installing the package
-REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 SRC_DIR = os.path.join(REPO_ROOT, "src")
 if SRC_DIR not in sys.path:
     sys.path.insert(0, SRC_DIR)
@@ -16,6 +16,7 @@ if SRC_DIR not in sys.path:
 from datamc import (  # noqa: E402
     load_config,
     data_to_parquet,
+    make_2d_comparison_plot,
     make_comparison_plot,
     mc_to_parquet,
     resolve_mc_files,
@@ -41,7 +42,11 @@ def main() -> int:
     data_parquet = os.path.join(parquet_dir, "data.parquet")
     mc_parquet = os.path.join(parquet_dir, "mc.parquet")
 
-    var_names = [v.name for v in cfg.variables]
+    var_names = {v.name for v in cfg.variables}
+    for v2 in cfg.variables_2d:
+        var_names.add(v2.xvar)
+        var_names.add(v2.yvar)
+    var_names = sorted(var_names)
 
     data_to_parquet(
         data_path=cfg.data_path,
@@ -91,6 +96,42 @@ def main() -> int:
             xrange=var.xrange,
         )
 
+        print(f"Wrote {outpath_noext}.[{', '.join(cfg.formats)}]")
+
+    for var2 in cfg.variables_2d:
+        for col in [var2.xvar, var2.yvar]:
+            if col not in data_df.columns:
+                raise KeyError(f"Variable {col!r} not found in data parquet: {data_parquet}")
+            if col not in mc_df.columns:
+                raise KeyError(f"Variable {col!r} not found in MC parquet: {mc_parquet}")
+
+        data_x = data_df[var2.xvar].to_numpy()
+        data_y = data_df[var2.yvar].to_numpy()
+        data_weights = data_df["__sweight"].to_numpy()
+
+        mc_x = mc_df[var2.xvar].to_numpy()
+        mc_y = mc_df[var2.yvar].to_numpy()
+        mc_weights = mc_df["__mc_weight"].to_numpy()
+
+        outpath_noext = os.path.join(cfg.outdir, var2.name)
+        make_2d_comparison_plot(
+            outpath_noext=outpath_noext,
+            formats=cfg.formats,
+            title=cfg.tagplot,
+            xlabel=var2.xlabel,
+            ylabel=var2.ylabel,
+            data_x=data_x,
+            data_y=data_y,
+            data_weights=data_weights,
+            mc_x=mc_x,
+            mc_y=mc_y,
+            mc_weights=mc_weights,
+            xbins=var2.xbins,
+            ybins=var2.ybins,
+            xrange=var2.xrange,
+            yrange=var2.yrange,
+            zscale=var2.zscale,
+        )
         print(f"Wrote {outpath_noext}.[{', '.join(cfg.formats)}]")
 
     return 0

@@ -16,6 +16,20 @@ class VariableSpec:
     xrange: tuple[float, float]
 
 
+@dataclass(frozen=True)
+class Variable2DSpec:
+    name: str
+    xvar: str
+    yvar: str
+    xlabel: str
+    ylabel: str
+    xbins: int
+    ybins: int
+    xrange: tuple[float, float]
+    yrange: tuple[float, float]
+    zscale: str  # "linear" or "log"
+
+
 def _expand_path(path: str, base_dir: str) -> str:
     path = os.path.expandvars(os.path.expanduser(path))
     if not os.path.isabs(path):
@@ -85,6 +99,7 @@ class AppConfig:
     formats: tuple[str, ...]
 
     variables: tuple[VariableSpec, ...]
+    variables_2d: tuple[Variable2DSpec, ...]
 
 
 def load_config(yaml_path: str) -> AppConfig:
@@ -129,6 +144,42 @@ def load_config(yaml_path: str) -> AppConfig:
         xrange_tuple = _parse_xrange(_require(spec, "xrange"))
         variables.append(VariableSpec(name=str(var_name), xlabel=xlabel, bins=bins, xrange=xrange_tuple))
 
+    variables_2d_raw = raw.get("variables_2d", {})
+    if variables_2d_raw is None:
+        variables_2d_raw = {}
+    if not isinstance(variables_2d_raw, Mapping):
+        raise ValueError("'variables_2d' must be a mapping (or omitted)")
+
+    variables_2d: list[Variable2DSpec] = []
+    for plot_name, spec in variables_2d_raw.items():
+        if not isinstance(spec, Mapping):
+            raise ValueError(f"2D variable {plot_name!r} must be a mapping")
+        xvar = str(_require(spec, "xvar"))
+        yvar = str(_require(spec, "yvar"))
+        xlabel = str(_require(spec, "xlabel"))
+        ylabel = str(_require(spec, "ylabel"))
+        xbins = int(_require(spec, "xbins"))
+        ybins = int(_require(spec, "ybins"))
+        xrange_tuple = _parse_xrange(_require(spec, "xrange"))
+        yrange_tuple = _parse_xrange(_require(spec, "yrange"))
+        zscale = str(spec.get("zscale", "linear")).strip().lower()
+        if zscale not in {"linear", "log"}:
+            raise ValueError(f"variables_2d[{plot_name!r}].zscale must be 'linear' or 'log' (got {zscale!r})")
+        variables_2d.append(
+            Variable2DSpec(
+                name=str(plot_name),
+                xvar=xvar,
+                yvar=yvar,
+                xlabel=xlabel,
+                ylabel=ylabel,
+                xbins=xbins,
+                ybins=ybins,
+                xrange=xrange_tuple,
+                yrange=yrange_tuple,
+                zscale=zscale,
+            )
+        )
+
     outdir = raw.get("outdir", "plots")
     outdir = _expand_path(str(outdir), base_dir)
 
@@ -161,5 +212,5 @@ def load_config(yaml_path: str) -> AppConfig:
         outdir=outdir,
         formats=formats,
         variables=tuple(variables),
+        variables_2d=tuple(variables_2d),
     )
-
