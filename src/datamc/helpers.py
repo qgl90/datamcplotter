@@ -1,3 +1,8 @@
+from __future__ import annotations
+
+# Backwards-compatible import shim.
+# The project used to keep these utilities under `datamc/helpers/`.
+
 from .config import load_config
 from .parquetio import data_to_parquet, mc_to_parquet, resolve_tree_name_root
 from .plotting import make_comparison_plot
@@ -11,3 +16,4 @@ __all__ = [
     "make_comparison_plot",
     "resolve_mc_files",
 ]
+

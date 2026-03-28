@@ -22,3 +22,4 @@ def pull_distribution(data_counts: np.ndarray, data_err: np.ndarray, mc_counts: 
     mask = denom > 0
     pull[mask] = (data_counts[mask] - mc_counts[mask]) / denom[mask]
     return pull
+

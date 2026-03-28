@@ -162,3 +162,4 @@ def load_config(yaml_path: str) -> AppConfig:
         formats=formats,
         variables=tuple(variables),
     )
+

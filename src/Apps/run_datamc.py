@@ -13,7 +13,7 @@ SRC_DIR = os.path.join(REPO_ROOT, "src")
 if SRC_DIR not in sys.path:
     sys.path.insert(0, SRC_DIR)
 
-from datamc.helpers import (  # noqa: E402
+from datamc import (  # noqa: E402
     load_config,
     data_to_parquet,
     make_comparison_plot,

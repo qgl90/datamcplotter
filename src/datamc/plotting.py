@@ -3,14 +3,23 @@ from __future__ import annotations
 import os
 
 import matplotlib
-import mplhep as hep 
-hep.style.use("LHCb2")
+
 matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
 import numpy as np
 
 from .hist import pull_distribution, weighted_histogram
+
+try:  # optional, for HEP styling
+    import mplhep as hep  # type: ignore
+except Exception:  # pragma: no cover
+    hep = None
+else:
+    try:
+        hep.style.use("LHCb2")
+    except Exception:
+        pass
 
 
 def make_comparison_plot(
@@ -97,9 +106,11 @@ def make_comparison_plot(
     ax_pull.set_ylim(-5, 5)
     ax_pull.set_ylabel("Pull")
     ax_pull.set_xlabel(xlabel)
+
     for ext in formats:
         outpath = f"{outpath_noext}.{ext}"
         os.makedirs(os.path.dirname(outpath), exist_ok=True)
         fig.savefig(outpath, dpi=150, bbox_inches="tight")
 
     plt.close(fig)
+

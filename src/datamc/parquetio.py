@@ -127,3 +127,4 @@ def mc_to_parquet(
     arrays = rdf.AsNumpy(cols)
     df = pd.DataFrame({k: np.asarray(v) for k, v in arrays.items()})
     df.to_parquet(out_parquet, index=False)
+

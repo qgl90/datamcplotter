@@ -4,6 +4,7 @@ import glob
 import os
 from typing import Any
 
+
 def _expand_path(path: str, base_dir: str) -> str:
     path = os.path.expandvars(os.path.expanduser(path))
     if not os.path.isabs(path):
@@ -52,3 +53,4 @@ def resolve_mc_files(mc_spec: Any, *, base_dir: str, data_path: str | None = Non
             f"Could not resolve 'mc: {spec}'. Provide a ROOT file path, a glob, or place matching '*.root' files in {search_dir}"
         )
     return sorted(matches)
+

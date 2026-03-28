@@ -4,7 +4,7 @@ Small helper app to compare sWeighted data vs MC from ROOT files, producing per-
 
 ## Layout
 
-- `src/datamc/helpers/`: helpers (YAML config, ROOT IO, histogramming, plotting)
+- `src/datamc/`: helpers (YAML config, ROOT IO, histogramming, plotting)
 - `src/Apps/run_datamc.py`: main executable
 - `configs.yaml`: example config
 
