@@ -1,5 +1,5 @@
 # Example configuration for:
-#   python3 src/Apps/runners/run_datamc.py --yaml configs.yaml
+#   python3 src/Apps/run_datamc.py --yaml configs.yaml
 #
 # This app:
 # - loads the data ROOT TTree

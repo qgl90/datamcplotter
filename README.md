@@ -5,8 +5,8 @@ Small helper app to compare sWeighted data vs MC from ROOT files, producing per-
 ## Layout
 
 - `src/datamc/`: helpers (YAML config, ROOT IO, histogramming, plotting)
-- `src/Apps/runners/run_datamc.py`: batch executable
-- `src/Apps/runners/run_datamc_web.py`: interactive web UI
+- `src/Apps/run_datamc.py`: batch executable
+- `src/Apps/run_datamc_web.py`: interactive web UI
 - `configs.yaml`: example config
 
 ## Setup
@@ -29,7 +29,7 @@ pytest -q
 ## Run
 
 ```bash
-python3 src/Apps/runners/run_datamc.py --yaml configs.yaml
+python3 src/Apps/run_datamc.py --yaml configs.yaml
 ```
 
 Outputs:
@@ -47,5 +47,5 @@ Notes:
 Run a small interactive web UI (variable selection, binning/range edits, preview, and optional saving):
 
 ```bash
-streamlit run src/Apps/runners/run_datamc_web.py
+streamlit run src/Apps/run_datamc_web.py
 ```
