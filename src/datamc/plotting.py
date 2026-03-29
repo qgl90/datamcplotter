@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import colors
 
-from .hist import pull_distribution, weighted_histogram, weighted_histogram2d
+from .hist import pull_distribution, scale_factor_match_yield, weighted_histogram, weighted_histogram2d
 
 try:  # optional, for HEP styling
     import mplhep as hep  # type: ignore
@@ -43,7 +43,11 @@ def build_comparison_figure(
     )
     _, _, mc_counts, mc_err = weighted_histogram(mc_values, weights=mc_weights, bins=bins, xrange=xrange)
 
-    pulls = pull_distribution(data_counts, data_err, mc_counts, mc_err)
+    mc_scale = scale_factor_match_yield(data_counts, mc_counts)
+    mc_counts_plot = mc_scale * mc_counts
+    mc_err_plot = mc_scale * mc_err
+
+    pulls = pull_distribution(data_counts, data_err, mc_counts, mc_err, mc_scale=mc_scale)
 
     fig = plt.figure(figsize=figsize)
     gs = fig.add_gridspec(nrows=2, ncols=1, height_ratios=[3.5, 1.2], hspace=0.05)
@@ -54,11 +58,18 @@ def build_comparison_figure(
 
     bin_left = edges[:-1]
     bin_right = edges[1:]
-    ax.step(edges, np.r_[mc_counts, mc_counts[-1]], where="post", color="C1", linewidth=1.6, label=mc_label)
+    ax.step(
+        edges,
+        np.r_[mc_counts_plot, mc_counts_plot[-1]],
+        where="post",
+        color="C1",
+        linewidth=1.6,
+        label=mc_label,
+    )
     ax.fill_between(
         np.r_[bin_left, bin_right[-1]],
-        np.r_[mc_counts - mc_err, (mc_counts - mc_err)[-1]],
-        np.r_[mc_counts + mc_err, (mc_counts + mc_err)[-1]],
+        np.r_[mc_counts_plot - mc_err_plot, (mc_counts_plot - mc_err_plot)[-1]],
+        np.r_[mc_counts_plot + mc_err_plot, (mc_counts_plot + mc_err_plot)[-1]],
         step="post",
         color="C1",
         alpha=0.25,
@@ -185,30 +196,37 @@ def build_2d_comparison_figure(
         yrange=yrange,
     )
 
-    denom = np.sqrt(np.square(d_err) + np.square(m_err))
+    mc_scale = scale_factor_match_yield(d_counts, m_counts)
+    m_counts_plot = mc_scale * m_counts
+    m_err_plot = mc_scale * m_err
+
+    denom = np.sqrt(np.square(d_err) + np.square(m_err_plot))
     pull = np.zeros_like(d_counts, dtype=float)
     mask = denom > 0
-    pull[mask] = (d_counts[mask] - m_counts[mask]) / denom[mask]
+    pull[mask] = (d_counts[mask] - m_counts_plot[mask]) / denom[mask]
 
     fig, (ax_d, ax_m, ax_p) = plt.subplots(1, 3, figsize=figsize, constrained_layout=True, sharex=True, sharey=True)
     fig.suptitle(title)
 
     if zscale == "log":
-        vmin = None
-        positive = np.concatenate([d_counts[d_counts > 0], m_counts[m_counts > 0]])
-        if positive.size:
-            vmin = float(np.min(positive))
-        norm = colors.LogNorm(vmin=max(vmin or 1e-3, 1e-12), vmax=float(max(np.max(d_counts), np.max(m_counts), 1e-12)))
+        d_show = np.where(d_counts > 0, d_counts, np.nan)
+        m_show = np.where(m_counts_plot > 0, m_counts_plot, np.nan)
+        positive = np.concatenate([d_counts[d_counts > 0], m_counts_plot[m_counts_plot > 0]])
+        vmin = float(np.min(positive)) if positive.size else 1e-3
+        vmax = float(np.nanmax([np.nanmax(d_show), np.nanmax(m_show), 1e-12]))
+        norm = colors.LogNorm(vmin=max(vmin, 1e-12), vmax=vmax)
     else:
-        norm = colors.Normalize(vmin=0.0, vmax=float(max(np.max(d_counts), np.max(m_counts), 0.0)))
+        d_show = d_counts
+        m_show = m_counts_plot
+        norm = colors.Normalize(vmin=0.0, vmax=float(max(np.max(d_counts), np.max(m_counts_plot), 0.0)))
 
-    im_d = ax_d.pcolormesh(xedges, yedges, d_counts.T, shading="auto", norm=norm)
+    im_d = ax_d.pcolormesh(xedges, yedges, d_show.T, shading="auto", norm=norm)
     ax_d.set_title("Data")
     ax_d.set_xlabel(xlabel)
     ax_d.set_ylabel(ylabel)
     fig.colorbar(im_d, ax=ax_d, fraction=0.046, pad=0.04)
 
-    im_m = ax_m.pcolormesh(xedges, yedges, m_counts.T, shading="auto", norm=norm)
+    im_m = ax_m.pcolormesh(xedges, yedges, m_show.T, shading="auto", norm=norm)
     ax_m.set_title("MC")
     ax_m.set_xlabel(xlabel)
     fig.colorbar(im_m, ax=ax_m, fraction=0.046, pad=0.04)

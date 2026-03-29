@@ -13,6 +13,9 @@ def test_pull_distribution_basic():
     assert np.isclose(p[0], (10.0 - 7.0) / np.sqrt(1.0**2 + 2.0**2))
     assert np.isclose(p[1], 0.0)
 
+    p2 = pull_distribution(d, derr, m, merr, mc_scale=2.0)
+    assert np.isclose(p2[0], (10.0 - 2.0 * 7.0) / np.sqrt(1.0**2 + (2.0 * 2.0) ** 2))
+
 
 def test_weighted_histogram2d_shapes():
     x = np.array([0.1, 0.2, 0.8])

@@ -16,6 +16,20 @@ def weighted_histogram(values: np.ndarray, *, weights: np.ndarray | None, bins: 
     return edges, centers, counts, errors
 
 
+def scale_factor_match_yield(data_counts: np.ndarray, mc_counts: np.ndarray) -> float:
+    """
+    Returns a scale factor `s` such that `s * mc_counts` matches the total data yield.
+
+    This is computed on the already-binned counts (i.e. within the plotted range).
+    If either yield is non-positive (or MC is zero), returns 1.0.
+    """
+    data_sum = float(np.sum(data_counts))
+    mc_sum = float(np.sum(mc_counts))
+    if mc_sum <= 0.0 or data_sum <= 0.0:
+        return 1.0
+    return data_sum / mc_sum
+
+
 def weighted_histogram2d(
     x: np.ndarray,
     y: np.ndarray,
@@ -40,9 +54,17 @@ def weighted_histogram2d(
     return xedges, yedges, counts, errors
 
 
-def pull_distribution(data_counts: np.ndarray, data_err: np.ndarray, mc_counts: np.ndarray, mc_err: np.ndarray) -> np.ndarray:
-    denom = np.sqrt(np.square(data_err) + np.square(mc_err))
+def pull_distribution(
+    data_counts: np.ndarray,
+    data_err: np.ndarray,
+    mc_counts: np.ndarray,
+    mc_err: np.ndarray,
+    *,
+    mc_scale: float = 1.0,
+) -> np.ndarray:
+    mc_scale = float(mc_scale)
+    denom = np.sqrt(np.square(data_err) + np.square(mc_scale * mc_err))
     pull = np.zeros_like(data_counts, dtype=float)
     mask = denom > 0
-    pull[mask] = (data_counts[mask] - mc_counts[mask]) / denom[mask]
+    pull[mask] = (data_counts[mask] - mc_scale * mc_counts[mask]) / denom[mask]
     return pull
