@@ -20,6 +20,7 @@ def test_inline_tree_names_are_parsed(tmp_path):
                 xlabel: "pt"
                 bins: 10
                 xrange: [0, 1]
+                option: "frac_entries"
             """
         ).strip()
         + "\n",
@@ -31,6 +32,7 @@ def test_inline_tree_names_are_parsed(tmp_path):
     assert cfg.data_tree == "DecayTree"
     assert cfg.sweight_path.endswith("sw.root")
     assert cfg.sweight_tree == "sweightTree"
+    assert cfg.variables[0].option == "frac_entries"
 
 
 def test_variables_2d_parsed(tmp_path):

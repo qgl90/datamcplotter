@@ -94,6 +94,7 @@ def main() -> int:
             mc_label=f"mc {cfg.mc_label}",
             bins=var.bins,
             xrange=var.xrange,
+            option=var.option,
         )
 
         print(f"Wrote {outpath_noext}.[{', '.join(cfg.formats)}]")

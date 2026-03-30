@@ -131,6 +131,8 @@ def main():
             xmin = float(st.number_input("X min", value=float(default.xrange[0])))
             xmax = float(st.number_input("X max", value=float(default.xrange[1])))
             xlabel = st.text_input("X label", value=str(default.xlabel))
+            if default.option:
+                st.caption(f"Option: `{default.option}`")
             ylabel = None
             ybins = None
             ymin = None
@@ -189,6 +191,7 @@ def main():
             mc_label=mc_label,
             bins=bins,
             xrange=(xmin, xmax),
+            option=default.option,
         )
         default_outname = var_name
     else:

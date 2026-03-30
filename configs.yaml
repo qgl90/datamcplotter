@@ -84,6 +84,15 @@ variables:
     bins: 50
     xrange: [0, 50]
 
+  # Example with per-variable option:
+  # - option: "frac_entries" normalizes data and MC to fractions (sum of weights = 1)
+  #   and writes per-bin percentage labels for bins with fraction > 0.001 (0.1%).
+  # BremAdded:
+  #   xlabel: "BremAdded"
+  #   bins: 30
+  #   xrange: [-0.5, 2.5]
+  #   option: "frac_entries"
+
 # Optional 2D plots (each entry produces a 3-panel figure: Data, MC, Pull).
 # Keys are output plot names (saved as `outdir/<name>.<format>`).
 #

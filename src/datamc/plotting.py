@@ -36,6 +36,7 @@ def build_comparison_figure(
     mc_label: str,
     bins: int,
     xrange: tuple[float, float],
+    option: str | None = None,
     figsize: tuple[float, float] = (7.2, 6.4),
 ) -> Any:
     edges, centers, data_counts, data_err = weighted_histogram(
@@ -43,7 +44,23 @@ def build_comparison_figure(
     )
     _, _, mc_counts, mc_err = weighted_histogram(mc_values, weights=mc_weights, bins=bins, xrange=xrange)
 
-    mc_scale = scale_factor_match_yield(data_counts, mc_counts)
+    ylabel = "Entries"
+    annotate_frac = False
+    if option == "frac_entries":
+        data_sum = float(np.sum(data_counts))
+        mc_sum = float(np.sum(mc_counts))
+        if data_sum > 0:
+            data_counts = data_counts / data_sum
+            data_err = data_err / data_sum
+        if mc_sum > 0:
+            mc_counts = mc_counts / mc_sum
+            mc_err = mc_err / mc_sum
+        mc_scale = 1.0
+        ylabel = "Fraction of entries"
+        annotate_frac = True
+    else:
+        mc_scale = scale_factor_match_yield(data_counts, mc_counts)
+
     mc_counts_plot = mc_scale * mc_counts
     mc_err_plot = mc_scale * mc_err
 
@@ -86,9 +103,19 @@ def build_comparison_figure(
         label=data_label,
     )
 
-    ax.set_ylabel("Entries")
+    ax.set_ylabel(ylabel)
     ax.legend(frameon=False)
     ax.tick_params(axis="x", labelbottom=False)
+
+    if annotate_frac:
+        ymax = float(np.nanmax([np.max(data_counts) if data_counts.size else 0.0, np.max(mc_counts_plot) if mc_counts_plot.size else 0.0, 0.0]))
+        dy = 0.02 * ymax if ymax > 0 else 0.02
+        for x, y in zip(centers, data_counts):
+            if float(y) > 0.001:
+                ax.text(x, float(y) + dy, f"{100.0 * float(y):.1f}%", ha="center", va="bottom", fontsize=8, color="black")
+        for x, y in zip(centers, mc_counts_plot):
+            if float(y) > 0.001:
+                ax.text(x, float(y) + 2 * dy, f"{100.0 * float(y):.1f}%", ha="center", va="bottom", fontsize=8, color="C1", alpha=0.8)
 
     ax_pull.axhline(0.0, color="0.2", linewidth=1.0)
     colors = []
@@ -136,6 +163,7 @@ def make_comparison_plot(
     mc_label: str,
     bins: int,
     xrange: tuple[float, float],
+    option: str | None = None,
 ):
     fig = build_comparison_figure(
         title=title,
@@ -148,6 +176,7 @@ def make_comparison_plot(
         mc_label=mc_label,
         bins=bins,
         xrange=xrange,
+        option=option,
     )
 
     for ext in formats:

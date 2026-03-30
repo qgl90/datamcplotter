@@ -14,6 +14,7 @@ class VariableSpec:
     xlabel: str
     bins: int
     xrange: tuple[float, float]
+    option: str | None = None
 
 
 @dataclass(frozen=True)
@@ -142,7 +143,14 @@ def load_config(yaml_path: str) -> AppConfig:
         xlabel = str(_require(spec, "xlabel"))
         bins = int(_require(spec, "bins"))
         xrange_tuple = _parse_xrange(_require(spec, "xrange"))
-        variables.append(VariableSpec(name=str(var_name), xlabel=xlabel, bins=bins, xrange=xrange_tuple))
+        option = spec.get("option")
+        if option is not None:
+            option = str(option).strip()
+            if option not in {"frac_entries"}:
+                raise ValueError(f"variables[{var_name!r}].option must be 'frac_entries' (got {option!r})")
+        variables.append(
+            VariableSpec(name=str(var_name), xlabel=xlabel, bins=bins, xrange=xrange_tuple, option=option)
+        )
 
     variables_2d_raw = raw.get("variables_2d", {})
     if variables_2d_raw is None:
